@@ -9,48 +9,32 @@ const corsHeaders = {
 	'Access-Control-Allow-Methods': 'GET,HEAD,OPTIONS',
 };
 
-export interface ListPhotosResponseItem {
-	imageDetails: ImageEntryDetails;
-	isValidGalleryImage: boolean;
-}
+const unsortedProjectTitle = 'Unsorted';
 
-export interface ImageEntryDetails {
-	month?: string;
-	year?: string;
-	album?: string;
-	fileIndex: number;
-	canonicalName: string;
+export interface ListPhotosResponse {
+	project: Map<string, R2Object[]>;
 }
 
 function capitalize(value?: string): string | undefined {
 	return value ? String(value).charAt(0).toUpperCase() + String(value).slice(1) : value;
 }
 
-function capitalizeLocation(value?: string): string | undefined {
-	if (!value) {
-		return value;
-	}
+function formatProjectMapKey(value?: string): string {
 	return String(value)
 		.split('_')
 		.map((i) => capitalize(i))
-		.join(' ');
+		.join(' ')
+		.trim();
 }
 
-const areStringsSet = (stringFields: Array<string | undefined>) => stringFields.every((str) => str && str.length > 0);
-
-function makeImageDetailsFromCanonicalname(canonicalName: string): ImageEntryDetails {
-	const regex = /(?<month>[A-Za-z]+)-(?<year>[0-9]{4})-(?<place>[A-Za-z_]+)(?:-(?<index>[0-9]{1})){0,1}\.jpg$/;
-	const match = canonicalName.match(regex);
-	if (match) {
-		return {
-			month: capitalize(match.groups?.month),
-			year: capitalize(match.groups?.year),
-			album: capitalizeLocation(match.groups?.place),
-			fileIndex: isNaN(Number(match.groups?.index)) ? -1 : Number(match.groups?.index),
-			canonicalName: canonicalName,
-		};
-	}
-	return { fileIndex: -1, canonicalName: canonicalName };
+function makeProjectMap(objects: R2Object[]): Map<string, R2Object[]> {
+	let projectMap = new Map<string, R2Object[]>();
+	objects.forEach((element) => {
+		// add unsorted images into a misc. collection
+		const imageProject = formatProjectMapKey(element.key.split('/')[0]) ?? unsortedProjectTitle;
+		projectMap.set(imageProject, [...(projectMap.get(imageProject) ?? []), element as R2Object]);
+	});
+	return projectMap;
 }
 
 export default {
@@ -69,15 +53,9 @@ export default {
 					truncated = next.truncated;
 					cursor = next.truncated ? cursor : undefined;
 				}
-				let responseItems: Array<ListPhotosResponseItem> = [];
-				imageList.objects.forEach((element) => {
-					const imageDetails = makeImageDetailsFromCanonicalname(element.key);
-					responseItems.push({
-						imageDetails: imageDetails,
-						isValidGalleryImage: areStringsSet([imageDetails.month, imageDetails.year, imageDetails.album]),
-					} as ListPhotosResponseItem);
-				});
-				return new Response(JSON.stringify(responseItems), {
+				const projectMap = makeProjectMap(imageList.objects);
+				const respMap = Object.fromEntries(projectMap);
+				return new Response(JSON.stringify(respMap), {
 					headers: { ...corsHeaders, 'content-type': 'application/json' },
 					status: 200,
 				});

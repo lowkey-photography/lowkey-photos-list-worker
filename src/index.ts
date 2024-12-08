@@ -12,7 +12,7 @@ const corsHeaders = {
 const unsortedProjectTitle = 'Unsorted';
 
 export interface ListPhotosResponse {
-	project: Map<string, R2Object[]>;
+	projects: Map<string, R2Object[]>;
 }
 
 function capitalize(value?: string): string | undefined {

@@ -3,12 +3,12 @@ const options = {
 	prefix: 'photodump_2023_resized/',
 };
 
-interface ListPhotosResponseItem {
+export interface ListPhotosResponseItem {
 	imageDetails: ImageEntryDetails;
 	isValidGalleryImage: boolean;
 }
 
-interface ImageEntryDetails {
+export interface ImageEntryDetails {
 	month?: string;
 	year?: string;
 	album?: string;

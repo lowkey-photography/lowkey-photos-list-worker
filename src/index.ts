@@ -11,8 +11,10 @@ const corsHeaders = {
 
 const unsortedProjectTitle = 'Unsorted';
 
+// ListPhotosResponse is the result of the ListPhotos API. It returns a map of project names to a list of keys in storage
+// as strings
 export interface ListPhotosResponse {
-	projects: Map<string, R2Object[]>;
+	projects: Map<string, string[]>;
 }
 
 function capitalize(value?: string): string | undefined {
@@ -27,12 +29,12 @@ function formatProjectMapKey(value?: string): string {
 		.trim();
 }
 
-function makeProjectMap(objects: R2Object[]): Map<string, R2Object[]> {
-	let projectMap = new Map<string, R2Object[]>();
+function makeProjectMap(objects: R2Object[]): Map<string, string[]> {
+	let projectMap = new Map<string, string[]>();
 	objects.forEach((element) => {
 		// add unsorted images into a misc. collection
 		const imageProject = formatProjectMapKey(element.key.split('/')[0]) ?? unsortedProjectTitle;
-		projectMap.set(imageProject, [...(projectMap.get(imageProject) ?? []), element as R2Object]);
+		projectMap.set(imageProject, [...(projectMap.get(imageProject) ?? []), element.key]);
 	});
 	return projectMap;
 }

@@ -42,7 +42,7 @@ function makeProjectMap(objects: R2Object[]): Map<string, string[]> {
 	});
 	// sort by filename
 	projectMap.forEach((objects, _) => {
-		objects.sort((a, b) => b.localeCompare(a));
+		objects.sort((a, b) => a.localeCompare(b));
 	});
 	return projectMap;
 }

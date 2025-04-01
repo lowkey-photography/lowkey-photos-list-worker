@@ -29,12 +29,20 @@ function formatProjectMapKey(value?: string): string {
 		.trim();
 }
 
+// makeProjectMap  sorts each 'project' represented by each key in the Map, by its last modified date
+// so the most recent pictures and the most recently updated portfolio subfolder is always on top
 function makeProjectMap(objects: R2Object[]): Map<string, string[]> {
 	let projectMap = new Map<string, string[]>();
+	// sort by last updated date
+	objects.sort((a, b) => b.uploaded.getTime() - a.uploaded.getTime());
 	objects.forEach((element) => {
 		// add unsorted images into a misc. collection
 		const imageProject = formatProjectMapKey(element.key.split('/')[0]) ?? unsortedProjectTitle;
 		projectMap.set(imageProject, [...(projectMap.get(imageProject) ?? []), element.key]);
+	});
+	// sort by filename
+	projectMap.forEach((objects, _) => {
+		objects.sort((a, b) => b.localeCompare(a));
 	});
 	return projectMap;
 }
